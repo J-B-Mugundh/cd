@@ -1,0 +1,445 @@
+1) 
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <set>
+
+using namespace std;
+
+void isKeyword(const string& token) {
+    set<string> keywords = {"if", "else", "while", "for", "int", "float", "double", "char", "return"};
+    for(auto s : keywords){
+        if(token.find(s) != string::npos){
+            cout << s << " => keyword\n";
+        }
+    }
+}
+
+void isOperator(const string& token) {
+    set<string> operators = {"+", "-", "*", "/", "==", "<=", ">=", "<", ">", "=", ")", "("};
+    for(auto s : operators){
+        if(token.find(s) != string::npos){
+            cout << s << " => operator\n";
+        }
+    }
+}
+
+bool isIdentifier(string token){
+    set<string> keywords = {"if", "else", "while", "for", "int", "float", "double", "char", "return"};
+    set<string> operators = {"+", "-", "*", "/", "=", "==", "<", ">", "<=", ">=", ")", "("};
+
+    return keywords.find(token) == keywords.end() && operators.find(token) == operators.end();
+}
+
+bool isNumber(const string &word) {
+    istringstream iss(word);
+    double value;
+    return iss >> value >> ws && iss.eof();
+}
+
+int main() {
+    string s = "a = 10";
+
+    isKeyword(s);
+    isOperator(s);
+    istringstream iss(s);
+    string word;
+
+    while (iss >> word) {
+        if(isNumber(word)){
+            cout << word << " => number\n";
+        }else if(isIdentifier(word)){
+            cout << word << " => identifer\n";
+        }
+    }
+
+    return 0;
+}
+
+2) 
+
+#include <iostream>
+#include <unordered_map>
+#include <string>
+#include <sstream>
+#include <set>
+
+using namespace std;
+
+class SymbolTable {
+public:
+    void insert(const string& identifier, int value) {
+        table[identifier] = value;
+    }
+
+    bool lookup(const string& identifier, int& value) const {
+        auto it = table.find(identifier);
+        if (it != table.end()) {
+            value = it->second;
+            return true;
+        }
+        return false;
+    }
+
+    void display() const {
+        cout << "Symbol Table:\n\n";
+        cout << "Value  \tAddress\t\tType\n\n";
+        for (const auto& entry : table) {
+            cout << entry.first << "\t\t " << entry.second << " \t\t ";
+
+            if (isKeyword(entry.first)) {
+                cout << "keyword\n";
+            } else if (isOperator(entry.first)) {
+                cout << "operator\n";
+            } else if (isNumber(entry.first)) {
+                cout << "number\n";
+            } else if (isIdentifier(entry.first)) {
+                cout << "identifier\n";
+            } else {
+                cout << "unknown\n";
+            }
+        }
+    }
+
+private:
+    unordered_map<string, int> table;
+
+    static bool isKeyword(const string& token) {
+        set<string> keywords = {"if", "else", "while", "for", "int", "float", "double", "char", "return"};
+        return keywords.find(token) != keywords.end();
+    }
+
+    static bool isOperator(const string& token) {
+        set<string> operators = {"+", "-", "*", "/", "=", "==", "<", ">", "<=", ">=", ")", "("};
+        return operators.find(token) != operators.end();
+    }
+
+    static bool isIdentifier(const string& token) {
+        set<string> keywords = {"if", "else", "while", "for", "int", "float", "double", "char", "return"};
+        set<string> operators = {"+", "-", "*", "/", "=", "==", "<", ">", "<=", ">=", ")", "("};
+        return keywords.find(token) == keywords.end() && operators.find(token) == operators.end();
+    }
+
+    static bool isNumber(const string& word) {
+        istringstream iss(word);
+        double value;
+        iss >> value >> ws;
+        return iss.fail() && iss.eof();
+    }
+};
+
+int main() {
+    SymbolTable symbolTable;
+    string s = "for int i = 0";
+    istringstream iss(s);
+    string word;
+    int address = 1000;
+    
+    while(iss >> word){
+        symbolTable.insert(word, address);
+        address += 4;
+    }
+
+    symbolTable.display();
+
+    return 0;
+}
+
+3)
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <sstream>
+
+using namespace std;
+
+int main() {
+    map<pair<int, char>, string> data;
+
+    string input[] = {
+        "1 a 1",
+        "1 a 2",
+        "1 a 3",
+        "2 b 1",
+        "2 b 3",
+        "3 a 2"
+    };
+
+
+    for (const auto& line : input) {
+        int col1;
+        char col2;
+        string col3;
+
+        istringstream ss(line);
+        ss >> col1 >> col2 >> col3;
+
+        data[{col1, col2}] += col3;
+    }
+    
+    for (const auto& entry : data) {
+        cout << entry.first.first << " " << entry.first.second << " " << entry.second << endl;
+    }
+
+    return 0;
+}
+
+
+4)
+
+#include <iostream>
+#include <vector>
+#include <bits/stdc++.h>
+
+struct Row {
+    int col1;
+    int col2;
+    int col3;
+};
+
+bool compareRows(const Row& a, const Row& b) {
+    return a.col2 == b.col2 && a.col3 == b.col3;
+}
+
+int main() {
+    using namespace std;
+
+    vector<Row> input = {
+    // Input a b
+        {0, 1, 0},
+        {1, 1, 2},
+        {2, 1, 2},
+        {3, 1, 0}
+    };
+
+    sort(input.begin(), input.end(), compareRows);
+
+    auto last = unique(input.begin(), input.end(), compareRows);
+    input.erase(last, input.end());
+
+    for (const auto& row : input) {
+        cout << row.col1 << " " << row.col2 << " " << row.col3 << "\n";
+    }
+
+    return 0;
+}
+
+5) 
+#include <iostream>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+using namespace std;
+
+bool isNumber(const string& s) {
+   for(int i = 0; i < s.length(); i++){
+        if(!isdigit(s[i]))
+            return false;
+    }
+    return true;
+}
+
+int main() {
+    // Initialize map with static input
+    unordered_map<string, string> assignments = {
+        {"b", "c+d"},
+        {"e", "c+d"},
+        {"m", "c+d"},
+        {"a", "10"}
+    };
+    cout << "Intermediate code: \n";
+    for (const auto& assignment : assignments) {
+        cout << assignment.first << " = " << assignment.second << '\n';
+    }
+    
+    cout << "\nDead code elimination:\n";
+    for (const auto& assignment : assignments) {
+        // Skip entries where rhs is a number
+        if (isNumber(assignment.second)) {
+            continue;
+        }
+
+        cout << assignment.first << " = " << assignment.second << '\n';
+    }
+
+    cout << "\nOptimized code:\n";
+    unordered_set<string> assignedVariables;
+    for (const auto& assignment : assignments) {
+        // Skip entries where rhs is a number
+        if (isNumber(assignment.second)) {
+            continue;
+        }
+
+        // Check if the variable has been assigned before
+        if (assignedVariables.find(assignment.second) != assignedVariables.end()) {
+            // This assignment is redundant, so skip it
+            cout << "Redundant assignment removed: " << assignment.first << " = " << assignment.second << '\n';
+        } else {
+            // Mark the variable as assigned
+            assignedVariables.insert(assignment.second);
+            cout << assignment.first << " = " << assignment.second << '\n';
+        }
+    }
+
+    return 0;
+}
+
+6)
+
+#include <iostream>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+using namespace std;
+
+bool isNumber(const string& s) {
+   for(int i = 0; i < s.length(); i++){
+        if(!isdigit(s[i]))
+            return false;
+    }
+    return true;
+}
+
+int main() {
+    // Initialize map with static input
+    unordered_map<string, string> assignments = {
+        {"b", "c+d"},
+        {"e", "c+d"},
+        {"m", "c+d"},
+        {"a", "10"}
+    };
+    cout << "Intermediate code: \n";
+    for (const auto& assignment : assignments) {
+        cout << assignment.first << " = " << assignment.second << '\n';
+    }
+    
+    cout << "\nDead code elimination:\n";
+    for (const auto& assignment : assignments) {
+        // Skip entries where rhs is a number
+        if (isNumber(assignment.second)) {
+            continue;
+        }
+
+        cout << assignment.first << " = " << assignment.second << '\n';
+    }
+
+    cout << "\nOptimized code:\n";
+    unordered_set<string> assignedVariables;
+    for (const auto& assignment : assignments) {
+        // Skip entries where rhs is a number
+        if (isNumber(assignment.second)) {
+            continue;
+        }
+
+        // Check if the variable has been assigned before
+        if (assignedVariables.find(assignment.second) != assignedVariables.end()) {
+            // This assignment is redundant, so skip it
+            cout << "Redundant assignment removed: " << assignment.first << " = " << assignment.second << '\n';
+        } else {
+            // Mark the variable as assigned
+            assignedVariables.insert(assignment.second);
+            cout << assignment.first << " = " << assignment.second << '\n';
+        }
+    }
+
+    return 0;
+}
+
+7) 
+%{
+%}
+%%
+[0-9]+[.][0-9]+ printf("%s - float\n",yytext);
+int|float|char|double|void printf("%s - datatype\n",yytext);
+[0-9]+ printf("%s - integer\n",yytext);
+[a-z]+[()] printf("%s - function\n",yytext);
+[a-z]+ printf("%s - identifier\n",yytext);
+[+=*/-] printf("%s - operator\n",yytext);
+; printf("%s - delimiter\n",yytext);
+, printf("%s - separator\n",yytext);
+[#][a-z\.h]+ printf("%s - preprocessor\n",yytext);
+%%
+int yywrap(void)
+{
+        return 1;
+}
+int main()
+{
+  freopen("test.c", "r", stdin);
+        yylex();
+        return 0;
+}
+
+8)
+
+%{
+#include<stdio.h>
+#include "y.tab.h"
+extern int yylval;
+%}
+%%
+[0-9]+ {
+          yylval=atoi(yytext);
+          return NUMBER;
+       }
+[\t] ;
+[\n] return 0;
+. return yytext[0];
+%%
+int yywrap()
+{
+return 1;
+}
+
+calc.y
+%{
+#include <stdio.h>
+int flag = 0;
+%}
+
+%token NUMBER
+
+%left '+' '-'
+%left '*' '/' '%'
+%left '(' ')'
+
+%%
+
+ArithmeticExpression: E {
+    printf("\nResult of expression = %d\n", $$);
+    return 0;
+};
+
+E: E '+' E { $$ = $1 + $3; }
+ | E '-' E { $$ = $1 - $3; }
+ | E '(' E ')' { $$ = $1 * $3; }
+ | E '*' E { $$ = $1 * $3; }
+ | E '/' E {
+        if($3 == 0){
+        printf("Division by zero not allowed!\nResults to Infinity\n");
+        exit(1);
+        }
+$$ = $1 / $3; }
+ | E '%' E { $$ = $1 % $3; }
+ | '(' E ')' { $$ = $2; }
+ | NUMBER { $$ = $1; }
+;
+
+%%
+
+void main() {
+    printf("\nEnter Any Arithmetic Expression (with brackets):\n");
+    yyparse();
+    if (flag == 0)
+        printf("\nEntered arithmetic expression is Valid\n\n");
+}
+
+void yyerror(char *s) {
+    printf("\nEntered arithmetic expression is Invalid\n\n");
+    flag = 1;
+}
+
+
